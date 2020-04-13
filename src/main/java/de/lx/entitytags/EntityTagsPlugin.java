@@ -11,7 +11,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import de.lx.entitytags.services.NMSEntityTypeService;
+import de.lx.entitytags.nms.NMSEntityTypeService;
 
 public class EntityTagsPlugin extends JavaPlugin {
 

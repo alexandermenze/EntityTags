@@ -1,7 +1,8 @@
-package de.lx.entitytags.services;
+package de.lx.entitytags.nms;
 
 import org.bukkit.entity.EntityType;
 
+import de.lx.entitytags.services.EntityTypeService;
 import net.minecraft.server.v1_15_R1.IRegistry;
 import net.minecraft.server.v1_15_R1.MinecraftKey;
 
