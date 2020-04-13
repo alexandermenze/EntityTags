@@ -1,0 +1,6 @@
+name: "EntityTags"
+version: "1.0"
+author: "LX__"
+description: Custom nametag api for entities
+main: de.lx.EntityTags.EntityTagsPlugin
+depend: [ProtocolLib]
