@@ -56,7 +56,7 @@ public class PlayerMovePacketListener extends PacketAdapter implements Listener 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event){
         Location playerLocation = event.getPlayer().getLocation();
-        
+
         WrapperPlayServerSpawnEntityLiving packetWrapper = new WrapperPlayServerSpawnEntityLiving();
         packetWrapper.setEntityID(STATIC_ENTITY_ID);
         packetWrapper.setType(entityTypeService.getEntityTypeId(EntityType.ARMOR_STAND));
