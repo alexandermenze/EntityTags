@@ -11,7 +11,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.lx.entitytags.nms.NMSEntityIdRepository;
 import de.lx.entitytags.nms.NMSEntityTypeService;
+import de.lx.entitytags.services.EventInterceptor;
 
 public class EntityTagsPlugin extends JavaPlugin {
 
@@ -39,11 +41,11 @@ public class EntityTagsPlugin extends JavaPlugin {
 
     private void CreatePacketListeners(){
 
-        PlayerMovePacketListener playerMovePacketListener = 
-            new PlayerMovePacketListener(this, new NMSEntityTypeService());
+        EventInterceptor eventInterceptor = 
+            new EventInterceptor(this, new NMSEntityTypeService(), new NMSEntityIdRepository());
 
-        _packetListeners.add(playerMovePacketListener);
-        _listeners.add(playerMovePacketListener);
+        _packetListeners.add(eventInterceptor);
+        _listeners.add(eventInterceptor);
 
     }
 }
