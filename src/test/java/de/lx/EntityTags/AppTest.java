@@ -1,4 +1,4 @@
-package de.lx.EntityTags;
+package de.lx.entitytags;
 
 import static org.junit.Assert.assertTrue;
 
