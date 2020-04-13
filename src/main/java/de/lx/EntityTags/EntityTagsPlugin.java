@@ -1,4 +1,4 @@
-package de.lx.EntityTags;
+package de.lx.entitytags;
 
 import java.util.ArrayList;
 import java.util.List;
