@@ -125,6 +125,10 @@ public class WrapperPlayServerSpawnEntityLiving extends AbstractPacket {
 		handle.getIntegers().write(1, (int) value.getTypeId());
 	}
 
+	public void setType(int typeId) {
+		handle.getIntegers().write(1, typeId);
+	}
+
 	/**
 	 * Retrieve the x position of the object.
 	 * <p>
