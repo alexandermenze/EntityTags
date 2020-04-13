@@ -11,6 +11,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.lx.entitytags.services.NMSEntityTypeService;
+
 public class EntityTagsPlugin extends JavaPlugin {
 
     private final List<PacketListener> _packetListeners = new ArrayList<PacketListener>();
@@ -37,7 +39,8 @@ public class EntityTagsPlugin extends JavaPlugin {
 
     private void CreatePacketListeners(){
 
-        PlayerMovePacketListener playerMovePacketListener = new PlayerMovePacketListener(this);
+        PlayerMovePacketListener playerMovePacketListener = 
+            new PlayerMovePacketListener(this, new NMSEntityTypeService());
 
         _packetListeners.add(playerMovePacketListener);
         _listeners.add(playerMovePacketListener);

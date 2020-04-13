@@ -17,18 +17,23 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
+import de.lx.entitytags.services.EntityTypeService;
+
 public class PlayerMovePacketListener extends PacketAdapter implements Listener {
 
-    private static final EntityType ARMOR_STAND_ENTITY_TYPE = EntityType.DROPPED_ITEM;
     private static final int STATIC_ENTITY_ID = 32999;
 
-    public PlayerMovePacketListener(Plugin plugin) {
+    private final EntityTypeService entityTypeService;
+
+    public PlayerMovePacketListener(Plugin plugin, EntityTypeService entityTypeService)
+    {
         super(plugin, ListenerPriority.NORMAL, 
             PacketType.Play.Server.SPAWN_ENTITY_LIVING,
             PacketType.Play.Server.ENTITY_METADATA,
             PacketType.Play.Server.ENTITY_DESTROY,
             PacketType.Play.Server.ENTITY_EQUIPMENT,
             PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+		this.entityTypeService = entityTypeService;
     }
 
     @Override
@@ -54,7 +59,7 @@ public class PlayerMovePacketListener extends PacketAdapter implements Listener 
         
         WrapperPlayServerSpawnEntityLiving packetWrapper = new WrapperPlayServerSpawnEntityLiving();
         packetWrapper.setEntityID(STATIC_ENTITY_ID);
-        packetWrapper.setType(ARMOR_STAND_ENTITY_TYPE);
+        packetWrapper.setType(entityTypeService.getEntityTypeId(EntityType.ARMOR_STAND));
         packetWrapper.setUniqueId(UUID.randomUUID());
         packetWrapper.setX(playerLocation.getX());
         packetWrapper.setY(playerLocation.getY());
