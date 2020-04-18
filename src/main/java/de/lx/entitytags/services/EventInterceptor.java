@@ -14,8 +14,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_15_R1.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -23,11 +21,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.Plugin;
-
-import net.minecraft.server.v1_15_R1.ChatDeserializer;
-import net.minecraft.server.v1_15_R1.DataWatcher;
-import net.minecraft.server.v1_15_R1.EntityArmorStand;
-import net.minecraft.server.v1_15_R1.IChatBaseComponent.ChatSerializer;
 
 public class EventInterceptor extends PacketAdapter implements Listener {
 
@@ -98,6 +91,8 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         packetMetadata.setEntityID(this.armorStandEntityId);
         WrappedDataWatcher dataWatcher = this.dataWatcherService.getByEntityType(EntityType.ARMOR_STAND);
         this.dataWatcherService.setCustomName(dataWatcher, "Tests 1234");
+        this.dataWatcherService.setCustomNameVisible(dataWatcher, true);
+        this.dataWatcherService.setNoGravity(dataWatcher, true);
         packetMetadata.setMetadata(dataWatcher.getWatchableObjects());
 
         packetMetadata.sendPacket(p);
