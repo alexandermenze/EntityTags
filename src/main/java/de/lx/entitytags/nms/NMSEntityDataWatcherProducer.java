@@ -13,9 +13,11 @@ import org.bukkit.entity.EntityType;
 import de.lx.entitytags.exceptions.NMSException;
 import de.lx.entitytags.services.EntityDataWatcherProducer;
 import de.lx.entitytags.services.EntityTypeService;
+import net.minecraft.server.v1_15_R1.BlockPosition;
 import net.minecraft.server.v1_15_R1.DataWatcher;
 import net.minecraft.server.v1_15_R1.Entity;
 import net.minecraft.server.v1_15_R1.EntityTypes;
+import net.minecraft.server.v1_15_R1.EnumMobSpawn;
 import net.minecraft.server.v1_15_R1.World;
 
 public class NMSEntityDataWatcherProducer implements EntityDataWatcherProducer {
@@ -39,7 +41,7 @@ public class NMSEntityDataWatcherProducer implements EntityDataWatcherProducer {
 
         EntityTypes<?> nmsEntityType = this.entityTypeService.getEntityType(entityType);
 
-        Object entityObject = nmsEntityType.createCreature(world, null, null, null, null, null, false, false);
+        Object entityObject = nmsEntityType.createCreature(world, null, null, null, BlockPosition.ZERO, EnumMobSpawn.COMMAND, false, false);
 
         if(!(entityObject instanceof Entity))
             throw new NMSException("Spawned object is not of type entity!");
