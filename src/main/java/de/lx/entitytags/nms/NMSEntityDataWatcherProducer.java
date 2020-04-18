@@ -29,7 +29,7 @@ public class NMSEntityDataWatcherProducer implements EntityDataWatcherProducer {
     }
 
     @Override
-    public WrappedDataWatcher Produce(EntityType entityType) {
+    public WrappedDataWatcher produce(EntityType entityType) {
         Optional<org.bukkit.World> bukkitWorld = this.server.getWorlds().stream().findFirst();
 
         if(!bukkitWorld.isPresent())

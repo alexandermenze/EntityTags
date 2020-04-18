@@ -11,6 +11,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.lx.entitytags.nms.NMSDataWatcherService;
+import de.lx.entitytags.nms.NMSEntityDataWatcherProducer;
 import de.lx.entitytags.nms.NMSEntityIdRepository;
 import de.lx.entitytags.nms.NMSEntityTypeService;
 import de.lx.entitytags.services.EventInterceptor;
@@ -42,7 +44,10 @@ public class EntityTagsPlugin extends JavaPlugin {
     private void CreatePacketListeners(){
 
         EventInterceptor eventInterceptor = 
-            new EventInterceptor(this, new NMSEntityTypeService(), new NMSEntityIdRepository());
+            new EventInterceptor(this, 
+            new NMSEntityTypeService(), 
+            new NMSEntityIdRepository(), 
+            new NMSDataWatcherService(new NMSEntityDataWatcherProducer(getServer(), new NMSEntityTypeService())));
 
         _packetListeners.add(eventInterceptor);
         _listeners.add(eventInterceptor);

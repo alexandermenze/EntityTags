@@ -5,5 +5,5 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.entity.EntityType;
 
 public interface EntityDataWatcherProducer {
-    WrappedDataWatcher Produce(EntityType entityType);
+    WrappedDataWatcher produce(EntityType entityType);
 }
