@@ -2,6 +2,7 @@ package de.lx.entitytags.nms;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 
@@ -27,7 +28,7 @@ public class NMSDataWatcherService implements DataWatcherService {
 
     @Override
     public void setCustomName(WrappedDataWatcher dataWatcher, String customName) {
-        dataWatcher.setObject(2, CraftChatMessage.fromStringOrNull(customName));
+        dataWatcher.setObject(2, Optional.of(CraftChatMessage.fromStringOrNull(customName)));
     }
 
     @Override
