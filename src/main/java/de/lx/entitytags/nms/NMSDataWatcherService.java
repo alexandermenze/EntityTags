@@ -29,5 +29,15 @@ public class NMSDataWatcherService implements DataWatcherService {
     public void setCustomName(WrappedDataWatcher dataWatcher, String customName) {
         dataWatcher.setObject(2, CraftChatMessage.fromStringOrNull(customName));
     }
+
+    @Override
+    public void setCustomNameVisible(WrappedDataWatcher dataWatcher, boolean visible) {
+        dataWatcher.setObject(3, visible);
+    }
+
+    @Override
+    public void setNoGravity(WrappedDataWatcher dataWatcher, boolean noGravity) {
+        dataWatcher.setObject(5, noGravity);
+    }
     
 }
