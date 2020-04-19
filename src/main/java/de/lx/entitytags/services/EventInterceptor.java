@@ -112,7 +112,7 @@ public class EventInterceptor extends PacketAdapter implements Listener {
     }
 
     private static double getTagOffset(Entity entity){
-        return entity.getHeight();
+        return entity.isCustomNameVisible() ? entity.getHeight() + 0.3 : entity.getHeight();
     }
 
 }
