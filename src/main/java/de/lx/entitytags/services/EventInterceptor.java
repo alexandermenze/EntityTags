@@ -62,7 +62,7 @@ public class EventInterceptor extends PacketAdapter implements Listener {
     }
 
     @EventHandler
-    private void onPlayerJoin(PlayerInteractEntityEvent event) {
+    private void onPlayerRightClickEntity(PlayerInteractEntityEvent event) {
         this.entity = event.getRightClicked();
         spawnArmorStand(event.getRightClicked(), event.getPlayer());
     }
