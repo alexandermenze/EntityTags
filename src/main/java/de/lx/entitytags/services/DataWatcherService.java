@@ -10,4 +10,5 @@ public interface DataWatcherService {
     void setCustomNameVisible(WrappedDataWatcher dataWatcher, boolean visible);
     void setNoGravity(WrappedDataWatcher dataWatcher, boolean noGravity);
     void setMarker(WrappedDataWatcher dataWatcher, boolean marker);
+    void setInvisible(WrappedDataWatcher dataWatcher, boolean invisible);
 }

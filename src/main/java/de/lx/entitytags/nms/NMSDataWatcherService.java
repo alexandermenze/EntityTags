@@ -11,6 +11,7 @@ import org.bukkit.entity.EntityType;
 
 import de.lx.entitytags.services.DataWatcherService;
 import de.lx.entitytags.services.EntityDataWatcherProducer;
+import de.lx.entitytags.util.BitFlags;
 
 public class NMSDataWatcherService implements DataWatcherService {
 
@@ -43,15 +44,12 @@ public class NMSDataWatcherService implements DataWatcherService {
 
     @Override
     public void setMarker(WrappedDataWatcher dataWatcher, boolean marker) {
-        byte flags = dataWatcher.getByte(14);
-        
-        if (marker) {
-            flags = (byte)(flags | 0x10);
-        }else{
-            flags = (byte)(flags & ~0x10);
-        }
+        dataWatcher.setObject(14, BitFlags.set(dataWatcher.getByte(14), (byte)0x10, marker));
+    }
 
-        dataWatcher.setObject(14, flags);
+    @Override
+    public void setInvisible(WrappedDataWatcher dataWatcher, boolean invisible) {
+        dataWatcher.setObject(0, BitFlags.set(dataWatcher.getByte(0), (byte)0x20, invisible));
     }
     
 }
