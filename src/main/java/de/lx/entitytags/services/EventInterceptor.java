@@ -93,6 +93,7 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         this.dataWatcherService.setCustomName(dataWatcher, "Tests 1234");
         this.dataWatcherService.setCustomNameVisible(dataWatcher, true);
         this.dataWatcherService.setNoGravity(dataWatcher, true);
+        this.dataWatcherService.setMarker(dataWatcher, true);
         packetMetadata.setMetadata(dataWatcher.getWatchableObjects());
 
         packetMetadata.sendPacket(p);
