@@ -40,5 +40,18 @@ public class NMSDataWatcherService implements DataWatcherService {
     public void setNoGravity(WrappedDataWatcher dataWatcher, boolean noGravity) {
         dataWatcher.setObject(5, noGravity);
     }
+
+    @Override
+    public void setMarker(WrappedDataWatcher dataWatcher, boolean marker) {
+        byte flags = dataWatcher.getByte(14);
+        
+        if (marker) {
+            flags = (byte)(flags | 0x10);
+        }else{
+            flags = (byte)(flags & ~0x10);
+        }
+
+        dataWatcher.setObject(14, flags);
+    }
     
 }

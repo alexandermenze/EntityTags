@@ -9,4 +9,5 @@ public interface DataWatcherService {
     void setCustomName(WrappedDataWatcher dataWatcher, String customName);
     void setCustomNameVisible(WrappedDataWatcher dataWatcher, boolean visible);
     void setNoGravity(WrappedDataWatcher dataWatcher, boolean noGravity);
+    void setMarker(WrappedDataWatcher dataWatcher, boolean marker);
 }
