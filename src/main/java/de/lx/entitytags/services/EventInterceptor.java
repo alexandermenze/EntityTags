@@ -53,7 +53,7 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         WrapperPlayServerEntityTeleport updateArmorStandWrapper = new WrapperPlayServerEntityTeleport();
         updateArmorStandWrapper.setEntityID(this.armorStandEntityId);
         updateArmorStandWrapper.setX(entity.getLocation().getX());
-        updateArmorStandWrapper.setY(entity.getLocation().getY());
+        updateArmorStandWrapper.setY(entity.getLocation().getY() + getTagOffset(entity));
         updateArmorStandWrapper.setZ(entity.getLocation().getZ());
         updateArmorStandWrapper.setYaw(entity.getLocation().getYaw());
         updateArmorStandWrapper.setPitch(entity.getLocation().getPitch());
@@ -81,10 +81,8 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         packetWrapper.setType(this.entityTypeService.getEntityTypeId(EntityType.ARMOR_STAND));
         packetWrapper.setUniqueId(UUID.randomUUID());
         packetWrapper.setX(spawnLocation.getX());
-        packetWrapper.setY(spawnLocation.getY());
+        packetWrapper.setY(spawnLocation.getY() + getTagOffset(entity));
         packetWrapper.setZ(spawnLocation.getZ());
-
-        packetWrapper.sendPacket(p);
 
         WrapperPlayServerEntityMetadata packetMetadata = new WrapperPlayServerEntityMetadata();
 
@@ -97,10 +95,11 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         this.dataWatcherService.setInvisible(dataWatcher, true);
         packetMetadata.setMetadata(dataWatcher.getWatchableObjects());
 
+        packetWrapper.sendPacket(p);
         packetMetadata.sendPacket(p);
     }
 
-    private Entity getEntityFromPacket(PacketEvent event) {
+    private static Entity getEntityFromPacket(PacketEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.REL_ENTITY_MOVE) {
             return new WrapperPlayServerRelEntityMove(event.getPacket()).getEntity(event);
         } else if (event.getPacketType() == PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) {
@@ -110,6 +109,10 @@ public class EventInterceptor extends PacketAdapter implements Listener {
         } else {
             return null;
         }
+    }
+
+    private static double getTagOffset(Entity entity){
+        return entity.getHeight();
     }
 
 }
