@@ -1,60 +1,75 @@
 package de.lx.entitytags;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketListener;
 
+import org.bukkit.entity.Entity;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.lx.entitytags.api.EntityTags;
 import de.lx.entitytags.bukkit.BukkitEntityService;
 import de.lx.entitytags.nms.NMSDataWatcherService;
 import de.lx.entitytags.nms.NMSEntityDataWatcherProducer;
 import de.lx.entitytags.nms.NMSEntityIdRepository;
 import de.lx.entitytags.nms.NMSEntityTypeService;
 import de.lx.entitytags.nms.NMSPacketService;
-import de.lx.entitytags.services.EventInterceptor;
+import de.lx.entitytags.services.DataWatcherService;
+import de.lx.entitytags.services.EntityIdRepository;
+import de.lx.entitytags.services.EntityService;
+import de.lx.entitytags.services.PacketService;
+import de.lx.entitytags.tags.EntityTagsHandler;
 
 public class EntityTagsPlugin extends JavaPlugin {
 
-    private final List<PacketListener> _packetListeners = new ArrayList<PacketListener>();
-    private final List<Listener> _listeners = new ArrayList<Listener>();
+    private final Set<EntityTagsHandler> entityTags = new HashSet<>();
+    private PacketService packetService;
+    private EntityService entityService;
+    private EntityIdRepository entityIdRepository;
+    private DataWatcherService dataWatcherService;
+    private ProtocolManager protocolManager;
 
     @Override
     public void onEnable() {
-        CreatePacketListeners();
-
-        final ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
-        _packetListeners.stream().forEach(protocolManager::addPacketListener);
-
-        _listeners.stream().forEach(
-            (l) -> getServer().getPluginManager().registerEvents(l, this));
+        this.packetService = new NMSPacketService(new NMSEntityTypeService());
+        this.entityService = new BukkitEntityService();
+        this.entityIdRepository = new NMSEntityIdRepository();
+        this.dataWatcherService = new NMSDataWatcherService(
+            new NMSEntityDataWatcherProducer(this.getServer(), new NMSEntityTypeService()));
+        this.protocolManager = ProtocolLibrary.getProtocolManager();
     }
 
     @Override
     public void onDisable() {
-        final ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
-        _packetListeners.stream().forEach(protocolManager::removePacketListener);
-
+        this.entityTags.stream().forEach(protocolManager::removePacketListener);
+        this.entityTags.clear();
         HandlerList.unregisterAll(this);
     }
 
-    private void CreatePacketListeners(){
+    public EntityTags ofEntity(Entity entity){
+        return findOrCreate(entity);
+    }
 
-        final EventInterceptor eventInterceptor = 
-            new EventInterceptor(this, 
-            new NMSEntityTypeService(), 
-            new NMSEntityIdRepository(), 
-            new NMSDataWatcherService(new NMSEntityDataWatcherProducer(this.getServer(), new NMSEntityTypeService())),
-            new NMSPacketService(new NMSEntityTypeService()),
-            new BukkitEntityService());
+    private EntityTagsHandler findOrCreate(Entity entity){
+        Optional<EntityTagsHandler> existingHandler = this.entityTags
+            .stream()
+            .filter(t -> t.getEntity().getEntityId() == entity.getEntityId())
+            .findFirst();
 
-        _packetListeners.add(eventInterceptor);
-        _listeners.add(eventInterceptor);
+        return existingHandler.isPresent() ? existingHandler.get() : create(entity);
+    }
 
+    private EntityTagsHandler create(Entity entity){
+        EntityTagsHandler handler = new EntityTagsHandler(this, entity, 
+            this.packetService, this.entityService, this.entityIdRepository, this.dataWatcherService);
+
+        this.getServer().getPluginManager().registerEvents(handler, this);
+        this.protocolManager.addPacketListener(handler);
+
+        return handler;
     }
 }
