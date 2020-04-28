@@ -18,16 +18,8 @@
  */
 package com.comphenix.packetwrapper;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.reflect.EquivalentConverter;
-import com.comphenix.protocol.wrappers.BukkitConverters;
-
-import org.bukkit.entity.Entity;
 
 public class WrapperPlayServerEntityDestroy extends AbstractPacket {
 	public static final PacketType TYPE = PacketType.Play.Server.ENTITY_DESTROY;
@@ -71,10 +63,4 @@ public class WrapperPlayServerEntityDestroy extends AbstractPacket {
 	public void setEntityIds(int[] value) {
 		handle.getIntegerArrays().write(0, value);
 	}
-
-
-    public Entity[] getEntities(PacketEvent event){
-        EquivalentConverter<Entity> converter = BukkitConverters.getEntityConverter(event.getPlayer().getWorld());
-        return Arrays.stream(getEntityIDs()).mapToObj(id -> converter.getSpecific(id)).toArray(Entity[]::new);
-    }
 }
