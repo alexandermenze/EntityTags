@@ -120,6 +120,9 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         Location location = this.entityService.getTagLocation(this.entity); 
 
         for (EntityTagInstance entityTagInstance : tags) {
+            if(!entityTagInstance.getEntityTag().isVisible(player))
+                continue;
+            
             this.packetService.sendSpawn(entityTagInstance.getEntityId(), EntityType.ARMOR_STAND, 
                 createDataWatcher(entityTagInstance, player), location, player);
             location = location.add(0, TAG_SPACING, 0);
