@@ -29,6 +29,7 @@ import de.lx.entitytags.services.PacketService;
 public class EntityTagsHandler extends PacketAdapter implements EntityTags, Listener {
 
     private final static double TAG_SPACING = 0.3;
+    private final static double INITIAL_SPAWN_DISTANCE = 64;
 
     private final PacketService packetService;
     private final EntityService entityService;
@@ -77,6 +78,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
             return;
 
         this.tags.remove(instance.get());
+        destroyInstance(instance.get());
     }
 
     @Override
@@ -135,10 +137,17 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
     }
 
     private EntityTagInstance createInstance(EntityTag entityTag){
-        return new EntityTagInstance(entityTag, this.entityIdRepository.reserve());
+        EntityTagInstance instance = new EntityTagInstance(entityTag, this.entityIdRepository.reserve());
+        handleAddInstance(instance);
+        return instance;
     }
 
-    private WrappedDataWatcher createDataWatcher(EntityTagInstance entityTagInstance, Player player){
+    private void destroyInstance(EntityTagInstance instance){
+        handleRemoveInstance(instance);
+        this.entityIdRepository.free(instance.getEntityId());
+    }
+
+    private WrappedDataWatcher createDataWatcher(EntityTagInstance entityTagInstance, Player player) {
         WrappedDataWatcher dataWatcher = this.dataWatcherService.getByEntityType(EntityType.ARMOR_STAND);
         this.dataWatcherService.setCustomNameVisible(dataWatcher, true);
         this.dataWatcherService.setInvisible(dataWatcher, true);
@@ -146,5 +155,17 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         this.dataWatcherService.setNoGravity(dataWatcher, true);
         this.dataWatcherService.setCustomName(dataWatcher, entityTagInstance.getEntityTag().getText(player));
         return dataWatcher;
+    }
+
+    private void handleAddInstance(EntityTagInstance instance){
+        for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
+            handleSpawn(player);
+        }
+    }
+
+    private void handleRemoveInstance(EntityTagInstance instance) {
+        for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
+            handleDestroy(player);
+        }
     }
 }
