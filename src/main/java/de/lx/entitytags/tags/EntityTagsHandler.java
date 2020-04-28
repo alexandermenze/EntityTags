@@ -28,6 +28,8 @@ import de.lx.entitytags.services.PacketService;
 
 public class EntityTagsHandler extends PacketAdapter implements EntityTags, Listener {
 
+    private final static double TAG_SPACING = 0.3;
+
     private final PacketService packetService;
     private final EntityService entityService;
     private final EntityIdRepository entityIdRepository;
@@ -94,37 +96,37 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
     private void handlePacket(PacketEvent event){
 
         if(this.packetService.isMovePacket(event.getPacketType())){
-            handleMove(event);
+            handleMove(event.getPlayer());
         }else if(event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING){
-            handleSpawn(event);
+            handleSpawn(event.getPlayer());
         }else if(event.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY){
-            handleDestroy(event);
+            handleDestroy(event.getPlayer());
         }
 
     }
 
-    private void handleMove(PacketEvent event){
+    private void handleMove(Player player){
         Location location = this.entityService.getTagLocation(this.entity);
 
         for (EntityTagInstance entityTagInstance : tags) {
-            this.packetService.sendMove(entityTagInstance.getEntityId(), location, event.getPlayer());
-            location = location.add(0, 0.25, 0);
+            this.packetService.sendMove(entityTagInstance.getEntityId(), location, player);
+            location = location.add(0, TAG_SPACING, 0);
         }
     }
 
-    private void handleSpawn(PacketEvent event){
+    private void handleSpawn(Player player){
         Location location = this.entityService.getTagLocation(this.entity); 
 
         for (EntityTagInstance entityTagInstance : tags) {
             this.packetService.sendSpawn(entityTagInstance.getEntityId(), EntityType.ARMOR_STAND, 
-                createDataWatcher(entityTagInstance, event.getPlayer()), location, event.getPlayer());
-            location = location.add(0, 0.25, 0);
+                createDataWatcher(entityTagInstance, player), location, player);
+            location = location.add(0, TAG_SPACING, 0);
         }
     }
 
-    private void handleDestroy(PacketEvent event) {
+    private void handleDestroy(Player player) {
         for (EntityTagInstance entityTagInstance : tags) {
-            this.packetService.sendDestroy(entityTagInstance.getEntityId(), event.getPlayer());
+            this.packetService.sendDestroy(entityTagInstance.getEntityId(), player);
         }
     }
 

@@ -2,6 +2,7 @@ package de.lx.entitytags.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
@@ -28,8 +29,23 @@ import org.bukkit.plugin.Plugin;
 
 import de.lx.entitytags.api.EntityTag;
 import de.lx.entitytags.tags.EntityTagsHandler;
+import net.md_5.bungee.api.ChatColor;
 
 public class EventInterceptor extends PacketAdapter implements Listener {
+
+    private class TestTag extends EntityTag {
+
+        @Override
+        public boolean isVisible(Player player) {
+            return true;
+        }
+
+        @Override
+        public String getText(Player player) {
+            return "Test" + ChatColor.RED + "Tag" + ChatColor.AQUA + "!";
+        }
+
+    }
 
     private final EntityTypeService entityTypeService;
     private final EntityIdRepository entityIdRepository;
@@ -78,6 +94,13 @@ public class EventInterceptor extends PacketAdapter implements Listener {
     private void onPlayerRightClickEntity(PlayerInteractEntityEvent event) {
         this.entity = event.getRightClicked();
         
+        Optional<EntityTagsHandler> existingHandler = handlers.stream().filter(h -> h.getEntity().getEntityId() == this.entity.getEntityId()).findFirst();
+
+        if(existingHandler.isPresent()){
+            existingHandler.get().addTag(new TestTag());
+            return;
+        }
+
         EntityTagsHandler handler = new EntityTagsHandler(plugin, this.entity, this.packetService, this.entityService, this.entityIdRepository, this.dataWatcherService);
 
         this.plugin.getServer().getPluginManager().registerEvents(handler, this.plugin);
