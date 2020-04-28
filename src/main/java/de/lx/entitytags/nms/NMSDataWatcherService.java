@@ -24,7 +24,7 @@ public class NMSDataWatcherService implements DataWatcherService {
 
     @Override
     public WrappedDataWatcher getByEntityType(EntityType entityType) {
-        return this.cachedDataWatchers.computeIfAbsent(entityType, dataWatcherProducer::produce);
+        return this.cachedDataWatchers.computeIfAbsent(entityType, dataWatcherProducer::produce).deepClone();
     }
 
     @Override
