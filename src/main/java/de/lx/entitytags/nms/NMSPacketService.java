@@ -105,6 +105,14 @@ public class NMSPacketService implements PacketService {
         wrapper.sendPacket(targetPlayer);
     }
 
+    @Override
+    public void sendMetadata(int entityId, WrappedDataWatcher dataWatcher, Player targetPlayer) {
+        WrapperPlayServerEntityMetadata wrapperMetadata = new WrapperPlayServerEntityMetadata();
+        wrapperMetadata.setEntityID(entityId);
+        wrapperMetadata.setMetadata(dataWatcher.getWatchableObjects());
+        wrapperMetadata.sendPacket(targetPlayer);
+    }
+
     private boolean compare(Entity a, Entity b){
         if(a == null || b == null)
             return false;

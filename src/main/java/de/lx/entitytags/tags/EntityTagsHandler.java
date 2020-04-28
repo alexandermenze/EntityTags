@@ -25,8 +25,10 @@ import de.lx.entitytags.services.DataWatcherService;
 import de.lx.entitytags.services.EntityIdRepository;
 import de.lx.entitytags.services.EntityService;
 import de.lx.entitytags.services.PacketService;
+import de.lx.entitytags.util.events.EntityTagUpdateEventArgs;
+import de.lx.entitytags.util.events.EventHandler;
 
-public class EntityTagsHandler extends PacketAdapter implements EntityTags, Listener {
+public class EntityTagsHandler extends PacketAdapter implements EntityTags, Listener, EventHandler<EntityTagUpdateEventArgs> {
 
     private final static double TAG_SPACING = 0.3;
     private final static double INITIAL_SPAWN_DISTANCE = 64;
@@ -59,6 +61,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         if(containsEntityTag(tag))
             return;
 
+        tag.registerEventHandler(this);
         this.tags.add(createInstance(tag));
     }
 
@@ -67,6 +70,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         if(containsEntityTag(tag))
             return;
 
+        tag.registerEventHandler(this);
         this.tags.add(position, createInstance(tag));
     }
 
@@ -77,6 +81,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         if(!instance.isPresent())
             return;
 
+        tag.unregisterEventHandler(this);
         this.tags.remove(instance.get());
         destroyInstance(instance.get());
     }
@@ -95,6 +100,11 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         handlePacket(event);
     }
 
+    @Override
+    public void handleEvent(Object sender, EntityTagUpdateEventArgs args) {
+        handleUpdate();
+    }
+
     private void handlePacket(PacketEvent event){
 
         if(this.packetService.isMovePacket(event.getPacketType())){
@@ -105,6 +115,19 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
             handleDestroy(event.getPlayer());
         }
 
+    }
+
+    private void handleUpdate(){
+        for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
+            handleUpdate(player);
+        }
+    }
+
+    private void handleUpdate(Player player){
+        for (EntityTagInstance entityTagInstance : tags) {
+            this.packetService.sendMetadata(entityTagInstance.getEntityId(), 
+                createDataWatcher(entityTagInstance, player), player);
+        }
     }
 
     private void handleMove(Player player){

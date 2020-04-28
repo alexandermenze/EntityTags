@@ -17,4 +17,5 @@ public interface PacketService {
     void sendMove(int entityId, Location location, Player targetPlayer);
     void sendSpawn(int entityId, EntityType type, WrappedDataWatcher dataWatcher, Location location, Player targetPlayer);
     void sendDestroy(int entityId, Player targetPlayer);
+    void sendMetadata(int entityId, WrappedDataWatcher dataWatcher, Player targetPlayer);
 }
