@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.comphenix.protocol.ProtocolManager;
 
@@ -42,47 +43,48 @@ public class EntityTagsHolder implements Listener, Closeable {
         this.protocolManager = protocolManager;
     }
 
-    public EntityTags ofEntity(Entity entity){
+    public EntityTags ofEntity(Entity entity) {
         return findOrCreate(entity);
     }
 
-    public boolean hasTags(Entity entity){
+    public boolean hasTags(Entity entity) {
         return find(entity).isPresent();
     }
 
     @Override
     public void close() throws IOException {
-        this.entityTags.stream().forEach(EntityTagsHolder::tryClose);
-        this.entityTags.stream().forEach(HandlerList::unregisterAll);
-        this.entityTags.stream().forEach(protocolManager::removePacketListener);
-        this.entityTags.clear();
+        this.entityTags.stream().collect(Collectors.toList()).forEach(this::remove);
     }
 
     @EventHandler
-    private void onEntityDeath(EntityDeathEvent event){
+    private void onEntityDeath(EntityDeathEvent event) {
         Optional<EntityTagsHandler> entityTagsHandler = find(event.getEntity());
 
-        if(!entityTagsHandler.isPresent())
+        if (!entityTagsHandler.isPresent())
             return;
 
-        tryClose(entityTagsHandler.get());
+        remove(entityTagsHandler.get());
     }
 
-    private Optional<EntityTagsHandler> find(Entity entity){
-        return this.entityTags
-            .stream()
-            .filter(t -> t.getEntity().getEntityId() == entity.getEntityId())
-            .findFirst();
+    private void remove(EntityTagsHandler entityTagsHandler) {
+        tryClose(entityTagsHandler);
+        HandlerList.unregisterAll(entityTagsHandler);
+        protocolManager.removePacketListener(entityTagsHandler);
+        this.entityTags.remove(entityTagsHandler);
     }
 
-    private EntityTagsHandler findOrCreate(Entity entity){
+    private Optional<EntityTagsHandler> find(Entity entity) {
+        return this.entityTags.stream().filter(t -> t.getEntity().getEntityId() == entity.getEntityId()).findFirst();
+    }
+
+    private EntityTagsHandler findOrCreate(Entity entity) {
         Optional<EntityTagsHandler> existingHandler = find(entity);
         return existingHandler.isPresent() ? existingHandler.get() : create(entity);
     }
 
-    private EntityTagsHandler create(Entity entity){
-        EntityTagsHandler handler = new EntityTagsHandler(this.plugin, entity, 
-            this.packetService, this.entityService, this.entityIdRepository, this.dataWatcherService);
+    private EntityTagsHandler create(Entity entity) {
+        EntityTagsHandler handler = new EntityTagsHandler(this.plugin, entity, this.packetService, this.entityService,
+                this.entityIdRepository, this.dataWatcherService);
 
         this.plugin.getServer().getPluginManager().registerEvents(handler, this.plugin);
         this.protocolManager.addPacketListener(handler);
@@ -90,7 +92,7 @@ public class EntityTagsHolder implements Listener, Closeable {
         return handler;
     }
 
-    private static void tryClose(Closeable closeable){
+    private static void tryClose(Closeable closeable) {
         try {
             closeable.close();
         } catch (Exception ex) {
