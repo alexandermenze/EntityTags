@@ -83,14 +83,11 @@ public class EntityTagsHandler extends PacketAdapter
     public void removeTag(EntityTag tag) {
         Optional<EntityTagInstance> instance = this.tags.stream().filter(t -> t.getEntityTag() == tag).findFirst();
 
-        System.out.println("Tag getting removed");
-
         if (!instance.isPresent())
             return;
 
-        tag.unregisterEventHandler(this);
-        this.tags.remove(instance.get());
         destroyInstance(instance.get());
+        this.tags.remove(instance.get());
     }
 
     @Override
@@ -179,6 +176,7 @@ public class EntityTagsHandler extends PacketAdapter
     }
 
     private void destroyInstance(EntityTagInstance instance) {
+        instance.getEntityTag().unregisterEventHandler(this);
         handleRemoveInstance(instance);
         this.entityIdRepository.free(instance.getEntityId());
     }
