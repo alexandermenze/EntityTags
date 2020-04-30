@@ -64,8 +64,9 @@ public class EntityTagsHandler extends PacketAdapter
         if (containsEntityTag(tag))
             return;
 
-        tag.registerEventHandler(this);
-        this.tags.add(createInstance(tag));
+        EntityTagInstance instance = createInstance(tag);
+        this.tags.add(instance);
+        handleAddInstance(instance);
     }
 
     @Override
@@ -73,13 +74,16 @@ public class EntityTagsHandler extends PacketAdapter
         if (containsEntityTag(tag))
             return;
 
-        tag.registerEventHandler(this);
-        this.tags.add(position, createInstance(tag));
+        EntityTagInstance instance = createInstance(tag);
+        this.tags.add(instance);
+        handleAddInstance(instance);
     }
 
     @Override
     public void removeTag(EntityTag tag) {
         Optional<EntityTagInstance> instance = this.tags.stream().filter(t -> t.getEntityTag() == tag).findFirst();
+
+        System.out.println("Tag getting removed");
 
         if (!instance.isPresent())
             return;
@@ -170,9 +174,8 @@ public class EntityTagsHandler extends PacketAdapter
     }
 
     private EntityTagInstance createInstance(EntityTag entityTag) {
-        EntityTagInstance instance = new EntityTagInstance(entityTag, this.entityIdRepository.reserve());
-        handleAddInstance(instance);
-        return instance;
+        entityTag.registerEventHandler(this);
+        return new EntityTagInstance(entityTag, this.entityIdRepository.reserve());
     }
 
     private void destroyInstance(EntityTagInstance instance) {
