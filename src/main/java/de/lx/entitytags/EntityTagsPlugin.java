@@ -54,12 +54,19 @@ public class EntityTagsPlugin extends JavaPlugin {
         return findOrCreate(entity);
     }
 
-    private EntityTagsHandler findOrCreate(Entity entity){
-        Optional<EntityTagsHandler> existingHandler = this.entityTags
+    public boolean hasTags(Entity entity){
+        return find(entity).isPresent();
+    }
+
+    private Optional<EntityTagsHandler> find(Entity entity){
+        return this.entityTags
             .stream()
             .filter(t -> t.getEntity().getEntityId() == entity.getEntityId())
             .findFirst();
+    }
 
+    private EntityTagsHandler findOrCreate(Entity entity){
+        Optional<EntityTagsHandler> existingHandler = find(entity);
         return existingHandler.isPresent() ? existingHandler.get() : create(entity);
     }
 
