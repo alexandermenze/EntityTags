@@ -9,8 +9,10 @@ import java.util.Set;
 import com.comphenix.protocol.ProtocolManager;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.plugin.Plugin;
 
 import de.lx.entitytags.api.EntityTags;
@@ -54,6 +56,16 @@ public class EntityTagsHolder implements Listener, Closeable {
         this.entityTags.stream().forEach(HandlerList::unregisterAll);
         this.entityTags.stream().forEach(protocolManager::removePacketListener);
         this.entityTags.clear();
+    }
+
+    @EventHandler
+    private void onEntityDeath(EntityDeathEvent event){
+        Optional<EntityTagsHandler> entityTagsHandler = find(event.getEntity());
+
+        if(!entityTagsHandler.isPresent())
+            return;
+
+        tryClose(entityTagsHandler.get());
     }
 
     private Optional<EntityTagsHandler> find(Entity entity){
