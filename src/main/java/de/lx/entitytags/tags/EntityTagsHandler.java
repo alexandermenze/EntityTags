@@ -1,5 +1,7 @@
 package de.lx.entitytags.tags;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +19,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.plugin.Plugin;
 
 import de.lx.entitytags.api.EntityTag;
@@ -28,7 +31,8 @@ import de.lx.entitytags.services.PacketService;
 import de.lx.entitytags.util.events.EntityTagUpdateEventArgs;
 import de.lx.entitytags.util.events.EventHandler;
 
-public class EntityTagsHandler extends PacketAdapter implements EntityTags, Listener, EventHandler<EntityTagUpdateEventArgs> {
+public class EntityTagsHandler extends PacketAdapter
+        implements EntityTags, Listener, EventHandler<EntityTagUpdateEventArgs>, Closeable {
 
     private final static double TAG_SPACING = 0.3;
     private final static double INITIAL_SPAWN_DISTANCE = 64;
@@ -41,8 +45,8 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
     private final Entity entity;
     private final List<EntityTagInstance> tags = new ArrayList<>();
 
-    public EntityTagsHandler(Plugin plugin, Entity entity, PacketService packetService,
-            EntityService entityService, EntityIdRepository entityIdRepository, DataWatcherService dataWatcherService) {
+    public EntityTagsHandler(Plugin plugin, Entity entity, PacketService packetService, EntityService entityService,
+            EntityIdRepository entityIdRepository, DataWatcherService dataWatcherService) {
         super(plugin, ListenerPriority.MONITOR, packetService.getEntityPacketTypes());
         this.entity = entity;
         this.entityIdRepository = entityIdRepository;
@@ -58,7 +62,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
 
     @Override
     public void addTag(EntityTag tag) {
-        if(containsEntityTag(tag))
+        if (containsEntityTag(tag))
             return;
 
         tag.registerEventHandler(this);
@@ -67,7 +71,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
 
     @Override
     public void addTag(EntityTag tag, int position) {
-        if(containsEntityTag(tag))
+        if (containsEntityTag(tag))
             return;
 
         tag.registerEventHandler(this);
@@ -78,7 +82,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
     public void removeTag(EntityTag tag) {
         Optional<EntityTagInstance> instance = this.tags.stream().filter(t -> t.getEntityTag() == tag).findFirst();
 
-        if(!instance.isPresent())
+        if (!instance.isPresent())
             return;
 
         tag.unregisterEventHandler(this);
@@ -88,13 +92,12 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
 
     @Override
     public List<EntityTag> getTags() {
-        return Collections.unmodifiableList(
-            this.tags.stream().map(t -> t.getEntityTag()).collect(Collectors.toList()));
+        return Collections.unmodifiableList(this.tags.stream().map(t -> t.getEntityTag()).collect(Collectors.toList()));
     }
 
     @Override
     public void onPacketSending(PacketEvent event) {
-        if(event.isCancelled() || !this.packetService.containsEntity(event, this.entity))
+        if (event.isCancelled() || !this.packetService.containsEntity(event, this.entity))
             return;
 
         handlePacket(event);
@@ -105,32 +108,37 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         handleUpdate();
     }
 
-    private void handlePacket(PacketEvent event){
+    @Override
+    public void close() throws IOException {
+        this.tags.stream().map(t -> t.getEntityTag()).collect(Collectors.toList()).forEach(this::removeTag);
+    }
 
-        if(this.packetService.isMovePacket(event.getPacketType())){
+    private void handlePacket(PacketEvent event) {
+
+        if (this.packetService.isMovePacket(event.getPacketType())) {
             handleMove(event.getPlayer());
-        }else if(event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING){
+        } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING) {
             handleSpawn(event.getPlayer());
-        }else if(event.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY){
+        } else if (event.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY) {
             handleDestroy(event.getPlayer());
         }
 
     }
 
-    private void handleUpdate(){
+    private void handleUpdate() {
         for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
             handleUpdate(player);
         }
     }
 
-    private void handleUpdate(Player player){
+    private void handleUpdate(Player player) {
         for (EntityTagInstance entityTagInstance : tags) {
-            this.packetService.sendMetadata(entityTagInstance.getEntityId(), 
-                createDataWatcher(entityTagInstance, player), player);
+            this.packetService.sendMetadata(entityTagInstance.getEntityId(),
+                    createDataWatcher(entityTagInstance, player), player);
         }
     }
 
-    private void handleMove(Player player){
+    private void handleMove(Player player) {
         Location location = this.entityService.getTagLocation(this.entity);
 
         for (EntityTagInstance entityTagInstance : tags) {
@@ -139,15 +147,15 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         }
     }
 
-    private void handleSpawn(Player player){
-        Location location = this.entityService.getTagLocation(this.entity); 
+    private void handleSpawn(Player player) {
+        Location location = this.entityService.getTagLocation(this.entity);
 
         for (EntityTagInstance entityTagInstance : tags) {
-            if(!entityTagInstance.getEntityTag().isVisible(player))
+            if (!entityTagInstance.getEntityTag().isVisible(player))
                 continue;
-            
-            this.packetService.sendSpawn(entityTagInstance.getEntityId(), EntityType.ARMOR_STAND, 
-                createDataWatcher(entityTagInstance, player), location, player);
+
+            this.packetService.sendSpawn(entityTagInstance.getEntityId(), EntityType.ARMOR_STAND,
+                    createDataWatcher(entityTagInstance, player), location, player);
             location = location.add(0, TAG_SPACING, 0);
         }
     }
@@ -158,17 +166,17 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         }
     }
 
-    private boolean containsEntityTag(EntityTag entityTag){
+    private boolean containsEntityTag(EntityTag entityTag) {
         return this.tags.stream().anyMatch(t -> t.getEntityTag() == entityTag);
     }
 
-    private EntityTagInstance createInstance(EntityTag entityTag){
+    private EntityTagInstance createInstance(EntityTag entityTag) {
         EntityTagInstance instance = new EntityTagInstance(entityTag, this.entityIdRepository.reserve());
         handleAddInstance(instance);
         return instance;
     }
 
-    private void destroyInstance(EntityTagInstance instance){
+    private void destroyInstance(EntityTagInstance instance) {
         handleRemoveInstance(instance);
         this.entityIdRepository.free(instance.getEntityId());
     }
@@ -183,7 +191,7 @@ public class EntityTagsHandler extends PacketAdapter implements EntityTags, List
         return dataWatcher;
     }
 
-    private void handleAddInstance(EntityTagInstance instance){
+    private void handleAddInstance(EntityTagInstance instance) {
         for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
             handleSpawn(player);
         }
