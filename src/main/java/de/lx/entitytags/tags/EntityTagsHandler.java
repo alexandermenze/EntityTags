@@ -105,7 +105,7 @@ public class EntityTagsHandler extends PacketAdapter
 
     @Override
     public void handleEvent(Object sender, EntityTagUpdateEventArgs args) {
-        handleUpdate();
+        handleUpdateAllForAllPlayers();
     }
 
     @Override
@@ -116,29 +116,29 @@ public class EntityTagsHandler extends PacketAdapter
     private void handlePacket(PacketEvent event) {
 
         if (this.packetService.isMovePacket(event.getPacketType())) {
-            handleMove(event.getPlayer());
+            handleMoveAllForPlayer(event.getPlayer());
         } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING) {
-            handleSpawn(event.getPlayer());
+            handleSpawnAllForPlayer(event.getPlayer());
         } else if (event.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY) {
-            handleDestroy(event.getPlayer());
+            handleDestroyAllForPlayer(event.getPlayer());
         }
 
     }
 
-    private void handleUpdate() {
+    private void handleUpdateAllForAllPlayers() {
         for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
-            handleUpdate(player);
+            handleUpdateAllForPlayer(player);
         }
     }
 
-    private void handleUpdate(Player player) {
+    private void handleUpdateAllForPlayer(Player player) {
         for (EntityTagInstance entityTagInstance : tags) {
             this.packetService.sendMetadata(entityTagInstance.getEntityId(),
                     createDataWatcher(entityTagInstance, player), player);
         }
     }
 
-    private void handleMove(Player player) {
+    private void handleMoveAllForPlayer(Player player) {
         Location location = this.entityService.getTagLocation(this.entity);
 
         for (EntityTagInstance entityTagInstance : tags) {
@@ -147,7 +147,7 @@ public class EntityTagsHandler extends PacketAdapter
         }
     }
 
-    private void handleSpawn(Player player) {
+    private void handleSpawnAllForPlayer(Player player) {
         Location location = this.entityService.getTagLocation(this.entity);
 
         for (EntityTagInstance entityTagInstance : tags) {
@@ -160,10 +160,22 @@ public class EntityTagsHandler extends PacketAdapter
         }
     }
 
-    private void handleDestroy(Player player) {
+    private void handleSpawnSingleForPlayer(EntityTagInstance entityTagInstance, Player player) {
+        if (!entityTagInstance.getEntityTag().isVisible(player))
+            return;
+
+        this.packetService.sendSpawn(entityTagInstance.getEntityId(), EntityType.ARMOR_STAND,
+                createDataWatcher(entityTagInstance, player), this.entityService.getTagLocation(entity), player);
+    }
+
+    private void handleDestroyAllForPlayer(Player player) {
         for (EntityTagInstance entityTagInstance : tags) {
             this.packetService.sendDestroy(entityTagInstance.getEntityId(), player);
         }
+    }
+
+    private void handleDestroySingleForPlayer(EntityTagInstance entityTagInstance, Player player) {
+        this.packetService.sendDestroy(entityTagInstance.getEntityId(), player);
     }
 
     private boolean containsEntityTag(EntityTag entityTag) {
@@ -193,13 +205,14 @@ public class EntityTagsHandler extends PacketAdapter
 
     private void handleAddInstance(EntityTagInstance instance) {
         for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
-            handleSpawn(player);
+            handleSpawnSingleForPlayer(instance, player);
+            handleMoveAllForPlayer(player);
         }
     }
 
     private void handleRemoveInstance(EntityTagInstance instance) {
         for (Player player : this.entityService.getNearbyPlayers(this.entity, INITIAL_SPAWN_DISTANCE)) {
-            handleDestroy(player);
+            handleDestroySingleForPlayer(instance, player);
         }
     }
 }
