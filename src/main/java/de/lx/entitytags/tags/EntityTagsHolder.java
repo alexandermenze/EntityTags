@@ -89,6 +89,8 @@ public class EntityTagsHolder implements Listener, Closeable {
         this.plugin.getServer().getPluginManager().registerEvents(handler, this.plugin);
         this.protocolManager.addPacketListener(handler);
 
+        this.entityTags.add(handler);
+
         return handler;
     }
 
